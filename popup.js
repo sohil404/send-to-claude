@@ -14,7 +14,6 @@ init();
 
 async function init() {
   const content = document.getElementById("content");
-  const dot = document.getElementById("dot");
   const count = document.getElementById("count");
 
   try {
@@ -23,41 +22,41 @@ async function init() {
     if (response.error) throw new Error(response.error);
 
     const projects = response.projects || [];
-    dot.className = "dot on";
-    count.textContent = `${projects.length} project${projects.length !== 1 ? "s" : ""}`;
+    count.textContent = projects.length ? `${projects.length}` : "";
 
     if (projects.length === 0) {
       content.innerHTML = '<div class="msg">No recent Claude Code sessions.<br>Open a project in Claude Code first.</div>';
       return;
     }
 
-    content.innerHTML = "";
-    const list = document.createElement("div");
-    list.id = "projects";
+    content.innerHTML = '<div id="projects"></div>';
+    const list = document.getElementById("projects");
 
     for (const p of projects) {
+      const initial = p.name.charAt(0).toUpperCase();
+      const shortPath = shortenPath(p.path);
       const div = document.createElement("div");
       div.className = "project";
       div.innerHTML = `
-        <span class="name">${esc(p.name)}</span>
+        <div class="icon">${esc(initial)}</div>
+        <div class="info">
+          <div class="name">${esc(p.name)}</div>
+          <div class="path">${esc(shortPath)}</div>
+        </div>
         <span class="ago">${esc(p.ago)}</span>
       `;
       div.addEventListener("click", () => sendTo(p.name));
       list.appendChild(div);
     }
 
-    content.appendChild(list);
-
   } catch (e) {
-    dot.className = "dot off";
     count.textContent = "";
     const msg = e.message || String(e);
 
-    if (msg.includes("Specified native messaging host not found") || msg.includes("not found")) {
+    if (msg.includes("not found") || msg.includes("native messaging host")) {
       content.innerHTML = `<div class="msg">
-        Native host not installed yet.<br>
-        Run this once in your terminal:
-        <code>cd ${esc(getRepoHint())} && ./install.sh</code>
+        Run this once in your terminal to finish setup:
+        <code>./install.sh</code>
       </div>`;
     } else {
       content.innerHTML = `<div class="msg">${esc(msg)}</div>`;
@@ -79,7 +78,7 @@ async function sendTo(project) {
       });
       text = result?.result;
       if (!text) {
-        showResult(content, false, "No text selected");
+        showResult(content, false, "No text selected", "Highlight text on the page first");
         setTimeout(() => init(), 1500);
         return;
       }
@@ -99,7 +98,7 @@ async function sendTo(project) {
     });
 
     // Write file via native host
-    const response = await chrome.runtime.sendNativeMessage(HOST, {
+    await chrome.runtime.sendNativeMessage(HOST, {
       action: "send",
       project,
       url: tab.url,
@@ -110,35 +109,48 @@ async function sendTo(project) {
     });
 
     const chars = text.length > 1000
-      ? `${(text.length / 1000).toFixed(1)}k chars`
-      : `${text.length} chars`;
+      ? `${(text.length / 1000).toFixed(1)}k`
+      : `${text.length}`;
 
-    showResult(content, true, `Sent to ${project}`, `${chars} · copied to clipboard`);
+    showResult(content, true, `Sent to ${project}`, `${chars} chars copied`);
+
     chrome.action.setBadgeText({ text: "OK" });
     chrome.action.setBadgeBackgroundColor({ color: "#22c55e" });
     setTimeout(() => {
       chrome.action.setBadgeText({ text: "" });
       window.close();
-    }, 1200);
+    }, 1000);
 
   } catch (e) {
-    showResult(content, false, e.message);
+    showResult(content, false, "Failed to send", e.message);
   }
 }
 
 function showResult(el, ok, msg, detail) {
-  el.innerHTML = `
-    <div class="result${ok ? "" : " err"}">
-      ${ok ? '<div class="check">&#10003;</div>' : ""}
-      <div class="label">${esc(msg)}</div>
-      ${detail ? `<div class="detail">${esc(detail)}</div>` : ""}
-    </div>`;
+  if (ok) {
+    el.innerHTML = `
+      <div class="result">
+        <div class="check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div class="label">${esc(msg)}</div>
+        ${detail ? `<div class="detail">${esc(detail)}</div>` : ""}
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div class="result err">
+        <div class="label">${esc(msg)}</div>
+        ${detail ? `<div class="detail">${esc(detail)}</div>` : ""}
+      </div>`;
+  }
 }
 
-function getRepoHint() {
-  // Best-effort hint for where the extension is loaded from
-  return chrome.runtime.getURL("").replace("chrome-extension://", "").split("/")[0]
-    ? "send-to-claude" : "send-to-claude";
+function shortenPath(p) {
+  if (!p) return "";
+  return p.replace(/^\/Users\/[^/]+\//, "~/").replace(/^\/Volumes\/[^/]+\//, "");
 }
 
 function esc(s) {
