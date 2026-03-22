@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 260px;
+    font-family: -apple-system, system-ui, sans-serif;
+    background: #141414;
+    color: #e5e0d8;
+    font-size: 13px;
+  }
+  .header {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  .header h1 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .actions {
+    padding: 8px;
+  }
+  button {
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.1s;
+  }
+  button + button { margin-top: 4px; }
+  .btn-primary {
+    background: #1e1e1e;
+    color: #e5e0d8;
+  }
+  .btn-primary:hover { background: #2a2a2a; }
+  .btn-primary:active { background: #333; }
+  .icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .label { flex: 1; }
+  .sub {
+    font-size: 11px;
+    color: #666;
+  }
+  .result {
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .result.ok .check {
+    font-size: 24px;
+    color: #22c55e;
+  }
+  .result.ok .msg {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #22c55e;
+  }
+  .result.err .msg {
+    font-size: 12px;
+    color: #ef4444;
+    line-height: 1.5;
+  }
+  .detail {
+    font-size: 11px;
+    color: #555;
+    margin-top: 4px;
+  }
+  .footer {
+    padding: 8px 16px 10px;
+    border-top: 1px solid #1e1e1e;
+    font-size: 11px;
+    color: #444;
+    text-align: center;
+  }
+  .footer code {
+    color: #666;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>Send to Claude Code</h1>
+  </div>
+  <div id="content">
+    <div class="actions">
+      <button class="btn-primary" id="btn-page">
+        <span class="icon">&#9633;</span>
+        <span>
+          <span class="label">Send full page</span><br>
+          <span class="sub">Entire page text content</span>
+        </span>
+      </button>
+      <button class="btn-primary" id="btn-selection">
+        <span class="icon">&#9998;</span>
+        <span>
+          <span class="label">Send selection</span><br>
+          <span class="sub">Currently highlighted text</span>
+        </span>
+      </button>
+    </div>
+  </div>
+  <div class="footer">
+    Then in Claude Code: <code>cat /tmp/claude-page.json</code>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
