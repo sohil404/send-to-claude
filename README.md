@@ -1,32 +1,52 @@
 # Send to Claude Code
 
-Chrome extension that copies any webpage or selected text to your clipboard, formatted for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
+Chrome extension that sends any webpage or selected text to a [Claude Code](https://docs.anthropic.com/en/docs/claude-code) session.
 
-No server. No config. No dependencies. Just load it and go.
+Click the toolbar icon → pick a project → page content is saved and copied to clipboard. Then in Claude Code, just say "read what I sent" or:
 
-## Install
-
-1. Clone or download this repo
-2. Go to `chrome://extensions` → enable **Developer Mode**
-3. Click **Load unpacked** → select this folder
-4. Pin the extension to your toolbar
-
-Works with Chrome, Brave, Edge, Arc, and any Chromium browser.
-
-## Use
-
-- **Click the icon** → "Send full page" or "Send selection"
-- **Right-click highlighted text** → "Send to Claude Code"
-- Content is copied to clipboard with the source URL
-- Paste into Claude Code
-
-## What gets copied
-
-```markdown
-> Source: [Page Title](https://example.com/article)
-
-The full text content of the page...
+```bash
+cat /tmp/claude-page.json
 ```
+
+The extension automatically detects your active Claude Code projects — no configuration needed.
+
+## Setup
+
+```bash
+git clone https://github.com/sohil404/send-to-claude.git
+cd send-to-claude
+./install.sh
+```
+
+The install script will:
+1. Ask you to load the extension in Chrome and paste the Extension ID
+2. Set up the native bridge (a tiny Python script that reads your Claude Code sessions and writes files)
+3. Done — works forever, nothing to maintain
+
+## How it works
+
+**Click the icon** → shows your recent Claude Code projects → pick one:
+- "Full page" grabs all text content
+- "Selection" grabs highlighted text
+
+**Right-click** highlighted text → "Send to Claude Code" → sends to your most recent project.
+
+Content is saved to `/tmp/claude-page-{project}.json` and copied to your clipboard.
+
+```
+Chrome Extension ←→ Native Bridge (Python) ←→ ~/.claude/projects/
+                                            ↓
+                                  /tmp/claude-page-{project}.json
+                                            ↓
+                                      Claude Code
+```
+
+## Requirements
+
+- Chrome, Brave, Edge, Arc, or any Chromium browser
+- Python 3 (pre-installed on macOS and most Linux)
+- Claude Code installed (`~/.claude/` must exist)
+- macOS or Linux
 
 ## License
 

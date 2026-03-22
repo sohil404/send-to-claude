@@ -1,4 +1,6 @@
-// Context menu for selections
+const HOST = "com.sendtoclaude.bridge";
+
+// Context menu for right-click selections
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "send-selection",
@@ -7,47 +9,43 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-// Context menu → copy selection as markdown
+// Context menu → send to most recent project
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId !== "send-selection" || !info.selectionText) return;
 
-  const md = formatMarkdown(tab.url, tab.title, info.selectionText, "selection");
+  try {
+    // Get most recent project
+    const listResponse = await chrome.runtime.sendNativeMessage(HOST, { action: "list" });
+    const project = listResponse.projects?.[0]?.name || "default";
 
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: (text) => navigator.clipboard.writeText(text),
-    args: [md],
-  });
+    // Copy to clipboard
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (t) => navigator.clipboard.writeText(t),
+      args: [info.selectionText],
+    });
 
-  showBadge();
-});
+    // Write file
+    await chrome.runtime.sendNativeMessage(HOST, {
+      action: "send",
+      project,
+      url: tab.url,
+      title: tab.title,
+      text: info.selectionText,
+      type: "selection",
+      timestamp: new Date().toISOString(),
+    });
 
-// Messages from popup
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.action === "copy") {
-    copyToClipboard(msg.tabId, msg.md).then(() => sendResponse({ ok: true }));
-    return true;
+    showBadge("OK");
+  } catch {
+    showBadge("ERR");
   }
 });
 
-async function copyToClipboard(tabId, md) {
-  await chrome.scripting.executeScript({
-    target: { tabId },
-    func: (text) => navigator.clipboard.writeText(text),
-    args: [md],
+function showBadge(text) {
+  chrome.action.setBadgeText({ text });
+  chrome.action.setBadgeBackgroundColor({
+    color: text === "OK" ? "#22c55e" : "#ef4444",
   });
-  showBadge();
-}
-
-function formatMarkdown(url, title, text, type) {
-  const header = type === "selection"
-    ? `> Selected from [${title}](${url})\n\n`
-    : `> Source: [${title}](${url})\n\n`;
-  return header + text;
-}
-
-function showBadge() {
-  chrome.action.setBadgeText({ text: "OK" });
-  chrome.action.setBadgeBackgroundColor({ color: "#22c55e" });
-  setTimeout(() => chrome.action.setBadgeText({ text: "" }), 1500);
+  setTimeout(() => chrome.action.setBadgeText({ text: "" }), 2000);
 }

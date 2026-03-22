@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Send to Claude Code",
-  "version": "2.0",
-  "description": "Send any webpage or selected text to Claude Code with one click",
-  "permissions": ["activeTab", "contextMenus", "scripting"],
+  "version": "2.1",
+  "description": "Send any webpage or selected text to a Claude Code session with one click",
+  "permissions": ["activeTab", "contextMenus", "scripting", "nativeMessaging"],
   "background": {
     "service_worker": "background.js"
   },

@@ -5,56 +5,92 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    width: 240px;
+    width: 260px;
     font-family: -apple-system, system-ui, sans-serif;
     background: #141414;
     color: #e5e0d8;
     font-size: 13px;
   }
-  .actions { padding: 8px; }
-  button {
-    width: 100%;
-    padding: 11px 14px;
-    border: none;
-    border-radius: 6px;
+  .header {
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header h1 { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot.on { background: #22c55e; }
+  .dot.off { background: #555; }
+  .count { margin-left: auto; font-size: 11px; color: #555; }
+
+  #projects { max-height: 320px; overflow-y: auto; }
+  .project {
+    padding: 10px 16px;
     cursor: pointer;
-    font-size: 13px;
-    font-family: inherit;
-    text-align: left;
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #1e1e1e;
-    color: #e5e0d8;
+    border-bottom: 1px solid #1a1a1a;
     transition: background 0.1s;
   }
-  button + button { margin-top: 4px; }
-  button:hover { background: #2a2a2a; }
-  button:active { background: #333; }
-  .icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
-  .result {
-    padding: 18px 16px;
-    text-align: center;
+  .project:hover { background: #1e1e1e; }
+  .project:active { background: #2a2a2a; }
+  .project .name {
+    font-weight: 500; flex: 1;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .result .check { font-size: 22px; color: #22c55e; }
-  .result .msg { margin-top: 3px; font-size: 13px; color: #22c55e; }
+  .project .ago { font-size: 11px; color: #555; flex-shrink: 0; }
+
+  .mode-bar {
+    padding: 6px 16px 8px;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    gap: 4px;
+  }
+  .mode-btn {
+    flex: 1; padding: 5px; font-size: 11px;
+    border: 1px solid #2a2a2a; border-radius: 4px;
+    background: transparent; color: #666; cursor: pointer;
+    text-align: center; font-family: inherit;
+  }
+  .mode-btn.active { border-color: #444; color: #e5e0d8; background: #1e1e1e; }
+
+  .msg {
+    padding: 20px 16px;
+    text-align: center;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .msg code {
+    display: block;
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: #1e1e1e;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #999;
+    word-break: break-all;
+  }
+  .result { padding: 20px 16px; text-align: center; }
+  .result .check { font-size: 24px; color: #22c55e; }
+  .result .label { font-size: 13px; color: #22c55e; margin-top: 2px; }
   .result .detail { font-size: 11px; color: #555; margin-top: 4px; }
-  .result.err .msg { color: #ef4444; font-size: 12px; }
+  .result.err .label { color: #ef4444; }
 </style>
 </head>
 <body>
-  <div id="content">
-    <div class="actions">
-      <button id="btn-page">
-        <span class="icon">&#9633;</span>
-        <span>Send full page</span>
-      </button>
-      <button id="btn-selection">
-        <span class="icon">&#9998;</span>
-        <span>Send selection</span>
-      </button>
-    </div>
+  <div class="header">
+    <div class="dot" id="dot"></div>
+    <h1>Send to Claude Code</h1>
+    <span class="count" id="count"></span>
   </div>
+  <div class="mode-bar">
+    <button class="mode-btn active" id="btn-page">Full page</button>
+    <button class="mode-btn" id="btn-sel">Selection</button>
+  </div>
+  <div id="content"><div class="msg">Loading...</div></div>
   <script src="popup.js"></script>
 </body>
 </html>
