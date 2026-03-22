@@ -15,7 +15,7 @@ async function send(mode) {
       });
       text = result?.result;
       if (!text) {
-        showResult(content, false, "No text selected", "Highlight text on the page first");
+        show(content, false, "No text selected");
         return;
       }
     } else {
@@ -26,47 +26,39 @@ async function send(mode) {
       text = result?.result || "";
     }
 
-    // Copy to clipboard
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: (t) => navigator.clipboard.writeText(t),
-      args: [text],
-    });
+    // Format as markdown with source
+    const type = mode === "selection" ? "selection" : "full_page";
+    const header = type === "selection"
+      ? `> Selected from [${tab.title}](${tab.url})\n\n`
+      : `> Source: [${tab.title}](${tab.url})\n\n`;
+    const md = header + text;
 
-    // Send via background → native host
-    const response = await chrome.runtime.sendMessage({
-      action: "send",
-      data: {
-        url: tab.url,
-        title: tab.title,
-        text,
-        type: mode === "selection" ? "selection" : "full_page",
-      },
+    // Copy via background script (more reliable across origins)
+    await chrome.runtime.sendMessage({
+      action: "copy",
+      tabId: tab.id,
+      md,
     });
 
     const chars = text.length > 1000
       ? `${(text.length / 1000).toFixed(1)}k chars`
       : `${text.length} chars`;
 
-    if (response?.ok) {
-      showResult(content, true, "Sent to Claude Code", `${mode === "selection" ? "Selection" : "Full page"} · ${chars} · copied to clipboard`);
-      setTimeout(() => window.close(), 1500);
-    } else {
-      showResult(content, false, "Native host not found", "Run the install script first — see README");
-    }
+    show(content, true, "Copied!", chars + " — paste into Claude Code");
+    setTimeout(() => window.close(), 1200);
+
   } catch (e) {
-    showResult(content, false, "Error", e.message);
+    show(content, false, e.message);
   }
 }
 
-function showResult(el, ok, msg, detail) {
+function show(el, ok, msg, detail) {
   el.innerHTML = `
-    <div class="result ${ok ? "ok" : "err"}">
+    <div class="result${ok ? "" : " err"}">
       ${ok ? '<div class="check">&#10003;</div>' : ""}
       <div class="msg">${esc(msg)}</div>
       ${detail ? `<div class="detail">${esc(detail)}</div>` : ""}
-    </div>
-  `;
+    </div>`;
 }
 
 function esc(s) {
