@@ -1,6 +1,6 @@
 #!/bin/bash
 # One-time setup for Send to Claude Code
-# Sets up the native messaging host so the extension can read sessions and write files
+# Usage: ./install.sh [extension-id]
 
 set -e
 
@@ -10,16 +10,21 @@ HOST_NAME="com.sendtoclaude.bridge"
 
 chmod +x "$HOST_SCRIPT"
 
-echo ""
-echo "  Send to Claude Code — Setup"
-echo "  ─────────────────────────────"
-echo ""
-echo "  1. Go to chrome://extensions"
-echo "  2. Enable Developer Mode (top-right)"
-echo "  3. Load unpacked → select: $SCRIPT_DIR"
-echo "  4. Copy the Extension ID shown below the extension name"
-echo ""
-read -p "  Extension ID: " EXT_ID
+# Accept extension ID as argument or prompt
+EXT_ID="${1:-}"
+
+if [ -z "$EXT_ID" ]; then
+  echo ""
+  echo "  Send to Claude Code — Setup"
+  echo "  ─────────────────────────────"
+  echo ""
+  echo "  1. Go to chrome://extensions"
+  echo "  2. Enable Developer Mode (top-right)"
+  echo "  3. Load unpacked → select: $SCRIPT_DIR"
+  echo "  4. Copy the Extension ID shown below the extension name"
+  echo ""
+  read -p "  Extension ID: " EXT_ID
+fi
 
 if [ -z "$EXT_ID" ]; then
   echo "  No ID. Exiting."
