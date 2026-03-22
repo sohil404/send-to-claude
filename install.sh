@@ -5,10 +5,14 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HOST_SCRIPT="$SCRIPT_DIR/host/bridge.py"
+HOST_SCRIPT_SRC="$SCRIPT_DIR/host/bridge.py"
+HOST_DEST="$HOME/.claude/send-to-claude-bridge.py"
 HOST_NAME="com.sendtoclaude.bridge"
 
-chmod +x "$HOST_SCRIPT"
+# Copy bridge to ~/.claude/ (Chrome can't access external drives)
+mkdir -p "$HOME/.claude"
+cp "$HOST_SCRIPT_SRC" "$HOST_DEST"
+chmod +x "$HOST_DEST"
 
 # Accept extension ID as argument or prompt
 EXT_ID="${1:-}"
@@ -36,7 +40,7 @@ MANIFEST=$(cat <<EOF
 {
   "name": "$HOST_NAME",
   "description": "Send to Claude Code bridge",
-  "path": "$HOST_SCRIPT",
+  "path": "$HOST_DEST",
   "type": "stdio",
   "allowed_origins": ["chrome-extension://$EXT_ID/"]
 }
@@ -83,6 +87,6 @@ if [ "$INSTALLED" -eq 0 ]; then
 fi
 
 echo ""
-echo "  Done! Click the extension icon to pick a session and send."
+echo "  Done! Restart Chrome, then click the extension icon."
 echo "  In Claude Code: cat /tmp/claude-page.json"
 echo ""

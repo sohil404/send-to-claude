@@ -28,7 +28,11 @@ cd ~/send-to-claude && ./install.sh <EXTENSION_ID>
 
 Replace `<EXTENSION_ID>` with the actual ID the user gave you.
 
-## Step 4: Confirm
+## Step 4: Restart Chrome
+
+Tell the user to **quit and reopen Chrome** — native messaging host manifests are cached on launch.
+
+## Step 5: Confirm
 
 Tell the user:
 
