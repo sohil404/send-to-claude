@@ -17,7 +17,10 @@ async function init() {
   const count = document.getElementById("count");
 
   try {
-    const response = await chrome.runtime.sendNativeMessage(HOST, { action: "list" });
+    const response = await Promise.race([
+      chrome.runtime.sendNativeMessage(HOST, { action: "list" }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 3000)),
+    ]);
 
     if (response.error) throw new Error(response.error);
 
@@ -53,10 +56,12 @@ async function init() {
     count.textContent = "";
     const msg = e.message || String(e);
 
-    if (msg.includes("not found") || msg.includes("native messaging host")) {
+    if (msg.includes("not found") || msg.includes("native messaging host") || msg.includes("timeout")) {
       content.innerHTML = `<div class="msg">
-        Run this once in your terminal to finish setup:
-        <code>./install.sh</code>
+        Native bridge not connected.<br>
+        Run once in terminal:
+        <code>cd send-to-claude && ./install.sh</code>
+        Then reload this extension.
       </div>`;
     } else {
       content.innerHTML = `<div class="msg">${esc(msg)}</div>`;
