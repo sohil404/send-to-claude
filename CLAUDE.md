@@ -28,9 +28,9 @@ cd ~/send-to-claude && ./install.sh <EXTENSION_ID>
 
 Replace `<EXTENSION_ID>` with the actual ID the user gave you.
 
-## Step 4: Restart Chrome
+## Step 4: Reload the extension
 
-Tell the user to **quit and reopen Chrome** — native messaging host manifests are cached on launch.
+Tell the user to go to `chrome://extensions` and click the reload (↻) button on the Send to Claude Code extension.
 
 ## Step 5: Confirm
 

@@ -87,6 +87,6 @@ if [ "$INSTALLED" -eq 0 ]; then
 fi
 
 echo ""
-echo "  Done! Restart Chrome, then click the extension icon."
+echo "  Done! Reload the extension on chrome://extensions (click the ↻ icon)."
 echo "  In Claude Code: cat /tmp/claude-page.json"
 echo ""
